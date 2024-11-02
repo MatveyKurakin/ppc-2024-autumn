@@ -122,7 +122,7 @@ bool kurakin_m_min_values_by_rows_matrix_mpi::TestMPITaskParallel::run() {
   while (local_input_.begin() + delta + k * size_rows < local_input_.end() - last_delta) {
     local_res[ind] =
         *std::min_element(local_input_.begin() + delta + k * size_rows,
-                           std::min(local_input_.end(), local_input_.begin() + delta + (k + 1) * size_rows));
+                          std::min(local_input_.end(), local_input_.begin() + delta + (k + 1) * size_rows));
     ++k;
     ++ind;
   }
