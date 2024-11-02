@@ -111,7 +111,7 @@ bool kurakin_m_min_values_by_rows_matrix_mpi::TestMPITaskParallel::run() {
   }
 
   unsigned int ind = world.rank() * local_input_.size() / size_rows;
- 
+
   unsigned int delta = std::min(local_input_.size(), size_rows - world.rank() * local_input_.size() % size_rows);
   std::vector<int> local_res(count_rows, INT_MAX);
 
@@ -120,8 +120,9 @@ bool kurakin_m_min_values_by_rows_matrix_mpi::TestMPITaskParallel::run() {
 
   unsigned int k = 0;
   while (local_input_.begin() + delta + k * size_rows < local_input_.end() - last_delta) {
-    local_res[ind] = *std::min_element(local_input_.begin() + delta + k * size_rows,
-                                  std::min(local_input_.end(), local_input_.begin() + delta + (k + 1) * size_rows));
+    local_res[ind] =
+        *std::min_element(local_input_.begin() + delta + k * size_rows,
+                           std::min(local_input_.end(), local_input_.begin() + delta + (k + 1) * size_rows));
     ++k;
     ++ind;
   }
