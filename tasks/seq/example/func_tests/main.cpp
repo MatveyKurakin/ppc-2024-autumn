@@ -1,123 +1,121 @@
 // Copyright 2023 Nesterov Alexander
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <vector>
 
 #include "seq/example/include/ops_seq.hpp"
 
-TEST(Sequential, Test_Sum_10) {
-  const int count = 10;
-
-  // Create data
-  std::vector<int> in(1, count);
-  std::vector<int> out(1, 0);
+TEST(Sequential, Test_const_0) {
+  kurakin_m_monte_carlo_seq::Integral integral{
+      .func_ = [](std::vector<double> x) { return 0.; }, .bounds_ = {{-10, 10}}, .iterations_ = 100000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(in.data()));
-  taskDataSeq->inputs_count.emplace_back(in.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(out.data()));
-  taskDataSeq->outputs_count.emplace_back(out.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_seq::TestTaskSequential testTaskSequential(taskDataSeq);
+  kurakin_m_monte_carlo_seq::TestTaskSequential testTaskSequential(taskDataSeq);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
   testTaskSequential.run();
   testTaskSequential.post_processing();
-  ASSERT_EQ(count, out[0]);
+  ASSERT_EQ(0, res[0]);
 }
 
-TEST(Sequential, Test_Sum_20) {
-  const int count = 20;
-
-  // Create data
-  std::vector<int> in(1, count);
-  std::vector<int> out(1, 0);
+TEST(Sequential, Test_const_10) {
+  kurakin_m_monte_carlo_seq::Integral integral{
+      .func_ = [](std::vector<double> x) { return 10.; }, .bounds_ = {{-10, 10}}, .iterations_ = 100000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(in.data()));
-  taskDataSeq->inputs_count.emplace_back(in.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(out.data()));
-  taskDataSeq->outputs_count.emplace_back(out.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_seq::TestTaskSequential testTaskSequential(taskDataSeq);
+  kurakin_m_monte_carlo_seq::TestTaskSequential testTaskSequential(taskDataSeq);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
   testTaskSequential.run();
   testTaskSequential.post_processing();
-  ASSERT_EQ(count, out[0]);
+  ASSERT_EQ(200, res[0]);
 }
 
-TEST(Sequential, Test_Sum_50) {
-  const int count = 50;
-
-  // Create data
-  std::vector<int> in(1, count);
-  std::vector<int> out(1, 0);
+TEST(Sequential, Test_dimension_1) {
+  kurakin_m_monte_carlo_seq::Integral integral{
+      .func_ = [](std::vector<double> x) { return std::sin(x[0]); }, .bounds_ = {{-10, 10}}, .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(in.data()));
-  taskDataSeq->inputs_count.emplace_back(in.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(out.data()));
-  taskDataSeq->outputs_count.emplace_back(out.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_seq::TestTaskSequential testTaskSequential(taskDataSeq);
+  kurakin_m_monte_carlo_seq::TestTaskSequential testTaskSequential(taskDataSeq);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
   testTaskSequential.run();
   testTaskSequential.post_processing();
-  ASSERT_EQ(count, out[0]);
+  ASSERT_NEAR(0, res[0], 0.3);
 }
 
-TEST(Sequential, Test_Sum_70) {
-  const int count = 70;
-
-  // Create data
-  std::vector<int> in(1, count);
-  std::vector<int> out(1, 0);
+TEST(Sequential, Test_dimension_2) {
+  kurakin_m_monte_carlo_seq::Integral integral{
+      .func_ = [](std::vector<double> x) { return std::log(x[0] + x[1]) * cos(x[0] * x[1]); },
+      .bounds_ = {{1, 2}, {1, 3}},
+      .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(in.data()));
-  taskDataSeq->inputs_count.emplace_back(in.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(out.data()));
-  taskDataSeq->outputs_count.emplace_back(out.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_seq::TestTaskSequential testTaskSequential(taskDataSeq);
+  kurakin_m_monte_carlo_seq::TestTaskSequential testTaskSequential(taskDataSeq);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
   testTaskSequential.run();
   testTaskSequential.post_processing();
-  ASSERT_EQ(count, out[0]);
+  ASSERT_NEAR(-1.36, res[0], 0.3);
 }
 
-TEST(Sequential, Test_Sum_100) {
-  const int count = 100;
-
-  // Create data
-  std::vector<int> in(1, count);
-  std::vector<int> out(1, 0);
+TEST(Sequential, Test_dimension_3) {
+  kurakin_m_monte_carlo_seq::Integral integral{.func_ =
+                                                  [](std::vector<double> x) {
+                                                    return std::sin(x[0]) * std::pow(x[1], 2) /
+                                                           std::pow((1 + std::pow(x[2], 2)), 0.5);
+                                                  },
+                                              .bounds_ = {{3, 4}, {0, 5}, {-7, 10}},
+                                              .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(in.data()));
-  taskDataSeq->inputs_count.emplace_back(in.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(out.data()));
-  taskDataSeq->outputs_count.emplace_back(out.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_seq::TestTaskSequential testTaskSequential(taskDataSeq);
+  kurakin_m_monte_carlo_seq::TestTaskSequential testTaskSequential(taskDataSeq);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
   testTaskSequential.run();
   testTaskSequential.post_processing();
-  ASSERT_EQ(count, out[0]);
+  ASSERT_NEAR(-79.07, res[0], 0.3);
 }
 
 int main(int argc, char **argv) {

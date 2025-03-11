@@ -1,12 +1,17 @@
 // Copyright 2023 Nesterov Alexander
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "core/task/include/task.hpp"
 
-namespace nesterov_a_test_task_seq {
+namespace kurakin_m_monte_carlo_seq {
+
+struct Integral {
+  double (*func_)(std::vector<double> x);
+  std::vector<std::pair<double, double>> bounds_;
+  size_t iterations_;
+};
 
 class TestTaskSequential : public ppc::core::Task {
  public:
@@ -17,7 +22,7 @@ class TestTaskSequential : public ppc::core::Task {
   bool post_processing() override;
 
  private:
-  int input_{}, res{};
+  double res{};
 };
 
-}  // namespace nesterov_a_test_task_seq
+}  // namespace kurakin_m_monte_carlo_seq

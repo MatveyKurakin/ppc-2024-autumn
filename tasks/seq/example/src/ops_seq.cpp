@@ -1,34 +1,55 @@
 // Copyright 2024 Nesterov Alexander
 #include "seq/example/include/ops_seq.hpp"
 
-#include <thread>
+#include <random>
 
 using namespace std::chrono_literals;
 
-bool nesterov_a_test_task_seq::TestTaskSequential::pre_processing() {
+bool kurakin_m_monte_carlo_seq::TestTaskSequential::pre_processing() {
   internal_order_test();
-  // Init value for input and output
-  input_ = reinterpret_cast<int*>(taskData->inputs[0])[0];
-  res = 0;
   return true;
 }
 
-bool nesterov_a_test_task_seq::TestTaskSequential::validation() {
+bool kurakin_m_monte_carlo_seq::TestTaskSequential::validation() {
   internal_order_test();
-  // Check count elements of output
-  return taskData->inputs_count[0] == 1 && taskData->outputs_count[0] == 1;
-}
-
-bool nesterov_a_test_task_seq::TestTaskSequential::run() {
-  internal_order_test();
-  for (int i = 0; i < input_; i++) {
-    res++;
+  auto integral = *reinterpret_cast<Integral*>(taskData->inputs[0]);
+  for (const auto &bounds : integral.bounds_) {
+    if (bounds.first > bounds.second) {
+      return false;
+    }
   }
   return true;
 }
 
-bool nesterov_a_test_task_seq::TestTaskSequential::post_processing() {
+bool kurakin_m_monte_carlo_seq::TestTaskSequential::run() {
   internal_order_test();
-  reinterpret_cast<int*>(taskData->outputs[0])[0] = res;
+
+  auto integral = *reinterpret_cast<Integral*>(taskData->inputs[0]);
+  res = 0.0;
+
+  double section = 1.0;
+  for (const auto &bounds : integral.bounds_) {
+    section *= bounds.second - bounds.first;
+  }
+
+  std::random_device dev;
+  std::mt19937 gen(dev());
+
+  std::vector<double> x(integral.bounds_.size());
+  for (size_t k = 0; k < integral.iterations_; ++k) {
+    for (size_t i = 0; i < integral.bounds_.size(); ++i) {
+      x[i] = std::uniform_real_distribution<double>(integral.bounds_[i].first, integral.bounds_[i].second)(gen);
+    }
+    res += integral.func_(x);
+  }
+
+  res *= section / double(integral.iterations_);
+
+  return true;
+}
+
+bool kurakin_m_monte_carlo_seq::TestTaskSequential::post_processing() {
+  internal_order_test();
+  reinterpret_cast<double*>(taskData->outputs[0])[0] = res;
   return true;
 }
