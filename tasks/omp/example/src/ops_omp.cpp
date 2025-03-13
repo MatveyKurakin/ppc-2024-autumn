@@ -18,7 +18,7 @@ bool kurakin_m_monte_carlo_omp::TestOMPTaskParallel::pre_processing() {
 bool kurakin_m_monte_carlo_omp::TestOMPTaskParallel::validation() {
   internal_order_test();
   auto integral = *reinterpret_cast<Integral*>(taskData->inputs[0]);
-  for (auto& bounds : integral.bounds_) {
+  for (const auto& bounds : integral.bounds_) {
     if (bounds.first > bounds.second) {
       return false;
     }
@@ -33,7 +33,7 @@ bool kurakin_m_monte_carlo_omp::TestOMPTaskParallel::run() {
   double sum = 0.0;
 
   double section = 1.0;
-  for (auto& bounds : integral.bounds_) {
+  for (const auto& bounds : integral.bounds_) {
     section *= bounds.second - bounds.first;
   }
 
@@ -70,7 +70,7 @@ bool kurakin_m_monte_carlo_omp::TestTaskSequential::pre_processing() {
 bool kurakin_m_monte_carlo_omp::TestTaskSequential::validation() {
   internal_order_test();
   auto integral = *reinterpret_cast<Integral*>(taskData->inputs[0]);
-  for (const auto &bounds : integral.bounds_) {
+  for (const auto& bounds : integral.bounds_) {
     if (bounds.first > bounds.second) {
       return false;
     }
@@ -85,7 +85,7 @@ bool kurakin_m_monte_carlo_omp::TestTaskSequential::run() {
   res = 0.0;
 
   double section = 1.0;
-  for (const auto &bounds : integral.bounds_) {
+  for (const auto& bounds : integral.bounds_) {
     section *= bounds.second - bounds.first;
   }
 
