@@ -8,7 +8,7 @@
 
 TEST(sequential_example_perf_test, test_task_run) {
   kurakin_m_monte_carlo_seq::Integral integral{
-      .func_ = [](std::vector<double> x) { return 0.; }, .bounds_ = {{-1, 1}}, .iterations_ = 1000000};
+      .func_ = [](std::vector<double> x) { return x[0]; }, .bounds_ = {{-1, 1}}, .iterations_ = 1000000};
   std::vector<double> res(1, 0);
 
   // Create TaskData
@@ -38,7 +38,7 @@ TEST(sequential_example_perf_test, test_task_run) {
   auto perfAnalyzer = std::make_shared<ppc::core::Perf>(testTaskSequential);
   perfAnalyzer->task_run(perfAttr, perfResults);
   ppc::core::Perf::print_perf_statistic(perfResults);
-  ASSERT_EQ(0, res[0]);
+  ASSERT_NEAR(0, res[0], 0.01);
 }
 
 int main(int argc, char **argv) {

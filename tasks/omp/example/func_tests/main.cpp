@@ -6,9 +6,9 @@
 
 #include "omp/example/include/ops_omp.hpp"
 
-TEST(Parallel_Operations_OpenMP, Test_const_0) {
+TEST(Parallel_Operations_OpenMP, Test_validation) {
   kurakin_m_monte_carlo_omp::Integral integral{
-      .func_ = [](std::vector<double> x) { return 0.; }, .bounds_ = {{-10, 10}}, .iterations_ = 100000};
+      .func_ = [](std::vector<double> x) { return x[0]; }, .bounds_ = {{1, -1}}, .iterations_ = 100000};
   std::vector<double> res(1, 0);
 
   // Create TaskData
@@ -20,16 +20,12 @@ TEST(Parallel_Operations_OpenMP, Test_const_0) {
 
   // Create Task
   kurakin_m_monte_carlo_omp::TestOMPTaskParallel testOmpTaskParallel(taskDataSeq);
-  ASSERT_EQ(testOmpTaskParallel.validation(), true);
-  testOmpTaskParallel.pre_processing();
-  testOmpTaskParallel.run();
-  testOmpTaskParallel.post_processing();
-  ASSERT_EQ(0, res[0]);
+  ASSERT_EQ(testOmpTaskParallel.validation(), false);
 }
 
-TEST(Parallel_Operations_OpenMP, Test_const_10) {
+TEST(Parallel_Operations_OpenMP, Test_const) {
   kurakin_m_monte_carlo_omp::Integral integral{
-      .func_ = [](std::vector<double> x) { return 10.; }, .bounds_ = {{-10, 10}}, .iterations_ = 100000};
+      .func_ = [](std::vector<double> x) { return 10.; }, .bounds_ = {{-1, 1}}, .iterations_ = 100000};
   std::vector<double> res(1, 0);
 
   // Create TaskData
@@ -45,12 +41,12 @@ TEST(Parallel_Operations_OpenMP, Test_const_10) {
   testOmpTaskParallel.pre_processing();
   testOmpTaskParallel.run();
   testOmpTaskParallel.post_processing();
-  ASSERT_EQ(200, res[0]);
+  ASSERT_NEAR(20, res[0], 0.1);
 }
 
 TEST(Parallel_Operations_OpenMP, Test_dimension_1) {
   kurakin_m_monte_carlo_omp::Integral integral{
-      .func_ = [](std::vector<double> x) { return std::sin(x[0]); }, .bounds_ = {{-10, 10}}, .iterations_ = 1000000};
+      .func_ = [](std::vector<double> x) { return std::sin(x[0]); }, .bounds_ = {{0, 1}}, .iterations_ = 1000000};
   std::vector<double> res(1, 0);
 
   // Create TaskData
@@ -66,13 +62,13 @@ TEST(Parallel_Operations_OpenMP, Test_dimension_1) {
   testOmpTaskParallel.pre_processing();
   testOmpTaskParallel.run();
   testOmpTaskParallel.post_processing();
-  ASSERT_NEAR(0, res[0], 0.3);
+  ASSERT_NEAR(0.4597, res[0], 0.01);
 }
 
 TEST(Parallel_Operations_OpenMP, Test_dimension_2) {
   kurakin_m_monte_carlo_omp::Integral integral{
       .func_ = [](std::vector<double> x) { return std::log(x[0] + x[1]) * cos(x[0] * x[1]); },
-      .bounds_ = {{1, 2}, {1, 3}},
+      .bounds_ = {{1, 2}, {2, 3}},
       .iterations_ = 1000000};
   std::vector<double> res(1, 0);
 
@@ -89,17 +85,15 @@ TEST(Parallel_Operations_OpenMP, Test_dimension_2) {
   testOmpTaskParallel.pre_processing();
   testOmpTaskParallel.run();
   testOmpTaskParallel.post_processing();
-  ASSERT_NEAR(-1.36, res[0], 0.3);
+  ASSERT_NEAR(-0.7585, res[0], 0.01);
 }
 
 TEST(Parallel_Operations_OpenMP, Test_dimension_3) {
-  kurakin_m_monte_carlo_omp::Integral integral{.func_ =
-                                                  [](std::vector<double> x) {
-                                                    return std::sin(x[0]) * std::pow(x[1], 2) /
-                                                           std::pow((1 + std::pow(x[2], 2)), 0.5);
-                                                  },
-                                              .bounds_ = {{3, 4}, {0, 5}, {-7, 10}},
-                                              .iterations_ = 1000000};
+  kurakin_m_monte_carlo_omp::Integral integral{
+      .func_ =
+          [](std::vector<double> x) { return std::sin(x[0]) * std::pow(x[1], 2) / std::sqrt((1 + std::pow(x[2], 2))); },
+      .bounds_ = {{3, 4}, {0, 1}, {-7, -6}},
+      .iterations_ = 1000000};
   std::vector<double> res(1, 0);
 
   // Create TaskData
@@ -115,7 +109,7 @@ TEST(Parallel_Operations_OpenMP, Test_dimension_3) {
   testOmpTaskParallel.pre_processing();
   testOmpTaskParallel.run();
   testOmpTaskParallel.post_processing();
-  ASSERT_NEAR(-79.07, res[0], 0.3);
+  ASSERT_NEAR(-0.0171, res[0], 0.01);
 }
 
 int main(int argc, char **argv) {

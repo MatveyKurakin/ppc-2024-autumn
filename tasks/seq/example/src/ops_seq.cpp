@@ -3,8 +3,6 @@
 
 #include <random>
 
-using namespace std::chrono_literals;
-
 bool kurakin_m_monte_carlo_seq::TestTaskSequential::pre_processing() {
   internal_order_test();
   return true;
