@@ -13,3 +13,4 @@ sln/
 CMakeSettings.json
 .DS_Store
 .cache
+CMakeFiles/
