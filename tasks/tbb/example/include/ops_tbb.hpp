@@ -2,45 +2,56 @@
 #ifndef TASKS_EXAMPLES_TEST_TBB_OPS_TBB_H_
 #define TASKS_EXAMPLES_TEST_TBB_OPS_TBB_H_
 
+#include <tbb/tbb.h>
+
 #include <string>
 #include <vector>
 
 #include "core/task/include/task.hpp"
 
-namespace nesterov_a_test_task_tbb {
+namespace kurakin_m_monte_carlo_tbb {
 
-std::vector<int> getRandomVector(int sz);
+struct Integral {
+  double (*func_)(std::vector<double> x);
+  std::vector<std::pair<double, double>> bounds_;
+  size_t iterations_;
+};
 
-class TestTBBTaskSequential : public ppc::core::Task {
+class MonteCarloMethods {
+  Integral integral_;
+  double sum_;
+
  public:
-  explicit TestTBBTaskSequential(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
-  bool pre_processing() override;
-  bool validation() override;
-  bool run() override;
-  bool post_processing() override;
-
- private:
-  std::vector<int> input_;
-  int res{};
-  std::string ops;
+  MonteCarloMethods(Integral integral) : integral_(integral), sum_(0.0f) {}
+  MonteCarloMethods(const MonteCarloMethods& other, tbb::split) : integral_(other.integral_), sum_(0.0f) {}
+  void operator()(const tbb::blocked_range<size_t>& r);
+  void join(const MonteCarloMethods& other);
+  double get_sum();
 };
 
 class TestTBBTaskParallel : public ppc::core::Task {
  public:
-  explicit TestTBBTaskParallel(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
+  explicit TestTBBTaskParallel(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
   bool pre_processing() override;
   bool validation() override;
   bool run() override;
   bool post_processing() override;
 
  private:
-  std::vector<int> input_;
-  int res{};
-  std::string ops;
+  double res{};
+};
+class TestTaskSequential : public ppc::core::Task {
+ public:
+  explicit TestTaskSequential(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
+  bool pre_processing() override;
+  bool validation() override;
+  bool run() override;
+  bool post_processing() override;
+
+ private:
+  double res{};
 };
 
-}  // namespace nesterov_a_test_task_tbb
+}  // namespace kurakin_m_monte_carlo_tbb
 
 #endif  // TASKS_EXAMPLES_TEST_TBB_OPS_TBB_H_

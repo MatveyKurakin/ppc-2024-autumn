@@ -1,201 +1,117 @@
 // Copyright 2023 Nesterov Alexander
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <vector>
 
 #include "tbb/example/include/ops_tbb.hpp"
-
-TEST(Parallel_Operations_TBB, Test_Sum) {
-  std::vector<int> vec = nesterov_a_test_task_tbb::getRandomVector(100);
-  // Create data
-  std::vector<int> ref_res(1, 0);
+TEST(Parallel_Operations_TBB, Test_validation) {
+  kurakin_m_monte_carlo_tbb::Integral integral{
+      .func_ = [](std::vector<double> x) { return x[0]; }, .bounds_ = {{1, -1}}, .iterations_ = 100000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataSeq->inputs_count.emplace_back(vec.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(ref_res.data()));
-  taskDataSeq->outputs_count.emplace_back(ref_res.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskSequential testTbbTaskSequential(taskDataSeq, "+");
-  ASSERT_EQ(testTbbTaskSequential.validation(), true);
-  testTbbTaskSequential.pre_processing();
-  testTbbTaskSequential.run();
-  testTbbTaskSequential.post_processing();
-
-  // Create data
-  std::vector<int> par_res(1, 0);
-
-  // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataPar = std::make_shared<ppc::core::TaskData>();
-  taskDataPar->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataPar->inputs_count.emplace_back(vec.size());
-  taskDataPar->outputs.emplace_back(reinterpret_cast<uint8_t *>(par_res.data()));
-  taskDataPar->outputs_count.emplace_back(par_res.size());
-
-  // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataPar, "+");
-  ASSERT_EQ(testTbbTaskParallel.validation(), true);
-  testTbbTaskParallel.pre_processing();
-  testTbbTaskParallel.run();
-  testTbbTaskParallel.post_processing();
-  ASSERT_EQ(ref_res[0], par_res[0]);
+  kurakin_m_monte_carlo_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataSeq);
+  ASSERT_EQ(testTbbTaskParallel.validation(), false);
 }
 
-TEST(Parallel_Operations_TBB, Test_Diff) {
-  std::vector<int> vec = nesterov_a_test_task_tbb::getRandomVector(100);
-  // Create data
-  std::vector<int> ref_res(1, 0);
+TEST(Parallel_Operations_TBB, Test_const) {
+  kurakin_m_monte_carlo_tbb::Integral integral{
+      .func_ = [](std::vector<double> x) { return 10.; }, .bounds_ = {{-1, 1}}, .iterations_ = 100000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataSeq->inputs_count.emplace_back(vec.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(ref_res.data()));
-  taskDataSeq->outputs_count.emplace_back(ref_res.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskSequential testTbbTaskSequential(taskDataSeq, "-");
-  ASSERT_EQ(testTbbTaskSequential.validation(), true);
-  testTbbTaskSequential.pre_processing();
-  testTbbTaskSequential.run();
-  testTbbTaskSequential.post_processing();
-
-  // Create data
-  std::vector<int> par_res(1, 0);
-
-  // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataPar = std::make_shared<ppc::core::TaskData>();
-  taskDataPar->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataPar->inputs_count.emplace_back(vec.size());
-  taskDataPar->outputs.emplace_back(reinterpret_cast<uint8_t *>(par_res.data()));
-  taskDataPar->outputs_count.emplace_back(par_res.size());
-
-  // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataPar, "-");
+  kurakin_m_monte_carlo_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataSeq);
   ASSERT_EQ(testTbbTaskParallel.validation(), true);
   testTbbTaskParallel.pre_processing();
   testTbbTaskParallel.run();
   testTbbTaskParallel.post_processing();
-  ASSERT_EQ(ref_res[0], par_res[0]);
+  ASSERT_NEAR(20, res[0], 0.1);
 }
 
-TEST(Parallel_Operations_TBB, Test_Diff_2) {
-  std::vector<int> vec = nesterov_a_test_task_tbb::getRandomVector(50);
-  // Create data
-  std::vector<int> ref_res(1, 0);
+TEST(Parallel_Operations_TBB, Test_dimension_1) {
+  kurakin_m_monte_carlo_tbb::Integral integral{
+      .func_ = [](std::vector<double> x) { return std::sin(x[0]); }, .bounds_ = {{0, 1}}, .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataSeq->inputs_count.emplace_back(vec.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(ref_res.data()));
-  taskDataSeq->outputs_count.emplace_back(ref_res.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskSequential testTbbTaskSequential(taskDataSeq, "-");
-  ASSERT_EQ(testTbbTaskSequential.validation(), true);
-  testTbbTaskSequential.pre_processing();
-  testTbbTaskSequential.run();
-  testTbbTaskSequential.post_processing();
-
-  // Create data
-  std::vector<int> par_res(1, 0);
-
-  // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataPar = std::make_shared<ppc::core::TaskData>();
-  taskDataPar->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataPar->inputs_count.emplace_back(vec.size());
-  taskDataPar->outputs.emplace_back(reinterpret_cast<uint8_t *>(par_res.data()));
-  taskDataPar->outputs_count.emplace_back(par_res.size());
-
-  // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataPar, "-");
+  kurakin_m_monte_carlo_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataSeq);
   ASSERT_EQ(testTbbTaskParallel.validation(), true);
   testTbbTaskParallel.pre_processing();
   testTbbTaskParallel.run();
   testTbbTaskParallel.post_processing();
-  ASSERT_EQ(ref_res[0], par_res[0]);
+  ASSERT_NEAR(0.4597, res[0], 0.01);
 }
 
-TEST(Parallel_Operations_TBB, Test_Mult) {
-  std::vector<int> vec = nesterov_a_test_task_tbb::getRandomVector(10);
-  // Create data
-  std::vector<int> ref_res(1, 0);
+TEST(Parallel_Operations_TBB, Test_dimension_2) {
+  kurakin_m_monte_carlo_tbb::Integral integral{
+      .func_ = [](std::vector<double> x) { return std::log(x[0] + x[1]) * cos(x[0] * x[1]); },
+      .bounds_ = {{1, 2}, {2, 3}},
+      .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataSeq->inputs_count.emplace_back(vec.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(ref_res.data()));
-  taskDataSeq->outputs_count.emplace_back(ref_res.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskSequential testTbbTaskSequential(taskDataSeq, "*");
-  ASSERT_EQ(testTbbTaskSequential.validation(), true);
-  testTbbTaskSequential.pre_processing();
-  testTbbTaskSequential.run();
-  testTbbTaskSequential.post_processing();
-
-  // Create data
-  std::vector<int> par_res(1, 0);
-
-  // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataPar = std::make_shared<ppc::core::TaskData>();
-  taskDataPar->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataPar->inputs_count.emplace_back(vec.size());
-  taskDataPar->outputs.emplace_back(reinterpret_cast<uint8_t *>(par_res.data()));
-  taskDataPar->outputs_count.emplace_back(par_res.size());
-
-  // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataPar, "*");
+  kurakin_m_monte_carlo_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataSeq);
   ASSERT_EQ(testTbbTaskParallel.validation(), true);
   testTbbTaskParallel.pre_processing();
   testTbbTaskParallel.run();
   testTbbTaskParallel.post_processing();
-  ASSERT_EQ(ref_res[0], par_res[0]);
+  ASSERT_NEAR(-0.7585, res[0], 0.01);
 }
 
-TEST(Parallel_Operations_TBB, Test_Mult_2) {
-  std::vector<int> vec = nesterov_a_test_task_tbb::getRandomVector(5);
-  // Create data
-  std::vector<int> ref_res(1, 0);
+TEST(Parallel_Operations_TBB, Test_dimension_3) {
+  kurakin_m_monte_carlo_tbb::Integral integral{
+      .func_ =
+          [](std::vector<double> x) { return std::sin(x[0]) * std::pow(x[1], 2) / std::sqrt((1 + std::pow(x[2], 2))); },
+      .bounds_ = {{3, 4}, {0, 1}, {-7, -6}},
+      .iterations_ = 1000000};
+  std::vector<double> res(1, 0);
 
   // Create TaskData
   std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataSeq->inputs_count.emplace_back(vec.size());
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(ref_res.data()));
-  taskDataSeq->outputs_count.emplace_back(ref_res.size());
+  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&integral));
+  taskDataSeq->inputs_count.emplace_back(size_t(1));
+  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(res.data()));
+  taskDataSeq->outputs_count.emplace_back(res.size());
 
   // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskSequential testTbbTaskSequential(taskDataSeq, "*");
-  ASSERT_EQ(testTbbTaskSequential.validation(), true);
-  testTbbTaskSequential.pre_processing();
-  testTbbTaskSequential.run();
-  testTbbTaskSequential.post_processing();
-
-  // Create data
-  std::vector<int> par_res(1, 0);
-
-  // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataPar = std::make_shared<ppc::core::TaskData>();
-  taskDataPar->inputs.emplace_back(reinterpret_cast<uint8_t *>(vec.data()));
-  taskDataPar->inputs_count.emplace_back(vec.size());
-  taskDataPar->outputs.emplace_back(reinterpret_cast<uint8_t *>(par_res.data()));
-  taskDataPar->outputs_count.emplace_back(par_res.size());
-
-  // Create Task
-  nesterov_a_test_task_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataPar, "*");
+  kurakin_m_monte_carlo_tbb::TestTBBTaskParallel testTbbTaskParallel(taskDataSeq);
   ASSERT_EQ(testTbbTaskParallel.validation(), true);
   testTbbTaskParallel.pre_processing();
   testTbbTaskParallel.run();
   testTbbTaskParallel.post_processing();
-  ASSERT_EQ(ref_res[0], par_res[0]);
+  ASSERT_NEAR(-0.0171, res[0], 0.01);
 }
 
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+  testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
