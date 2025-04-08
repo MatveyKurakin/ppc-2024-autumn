@@ -37,10 +37,12 @@ bool kurakin_m_monte_carlo_omp::TestOMPTaskParallel::run() {
     section *= bounds.second - bounds.first;
   }
 
-  std::random_device dev;
-  std::mt19937 gen(dev());
-#pragma omp parallel firstprivate(gen) shared(integral) num_threads(4)
+  const int count_proc = 4;
+
+  std::vector<std::random_device> dev(count_proc);
+#pragma omp parallel shared(integral, dev) num_threads(count_proc)
   {
+    std::mt19937 gen(dev[omp_get_thread_num()]());
     std::vector<double> x(integral.bounds_.size());
 #pragma omp for reduction(+ : sum)
     for (int k = 0; k < integral.iterations_; ++k) {
