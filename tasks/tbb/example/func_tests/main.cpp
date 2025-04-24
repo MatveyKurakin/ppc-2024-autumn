@@ -24,7 +24,7 @@ TEST(Parallel_Operations_TBB, Test_validation) {
 
 TEST(Parallel_Operations_TBB, Test_const) {
   kurakin_m_monte_carlo_tbb::Integral integral{
-      .func_ = [](std::vector<double> x) { return 10.; }, .bounds_ = {{-1, 1}}, .iterations_ = 100000};
+      .func_ = [](std::vector<double> x) { return 10. + x[0]; }, .bounds_ = {{-1, 1}}, .iterations_ = 100000};
   std::vector<double> res(1, 0);
 
   // Create TaskData

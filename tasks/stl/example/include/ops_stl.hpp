@@ -7,40 +7,37 @@
 
 #include "core/task/include/task.hpp"
 
-namespace nesterov_a_test_task_stl {
+namespace kurakin_m_monte_carlo_stl {
 
-std::vector<int> getRandomVector(int sz);
-
-class TestSTLTaskSequential : public ppc::core::Task {
- public:
-  explicit TestSTLTaskSequential(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
-  bool pre_processing() override;
-  bool validation() override;
-  bool run() override;
-  bool post_processing() override;
-
- private:
-  std::vector<int> input_;
-  int res{};
-  std::string ops;
+struct Integral {
+  double (*func_)(std::vector<double> x);
+  std::vector<std::pair<double, double>> bounds_;
+  size_t iterations_;
 };
 
 class TestSTLTaskParallel : public ppc::core::Task {
  public:
-  explicit TestSTLTaskParallel(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
+  explicit TestSTLTaskParallel(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
   bool pre_processing() override;
   bool validation() override;
   bool run() override;
   bool post_processing() override;
 
  private:
-  std::vector<int> input_;
-  int res{};
-  std::string ops;
+  double res{};
+};
+class TestTaskSequential : public ppc::core::Task {
+ public:
+  explicit TestTaskSequential(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
+  bool pre_processing() override;
+  bool validation() override;
+  bool run() override;
+  bool post_processing() override;
+
+ private:
+  double res{};
 };
 
-}  // namespace nesterov_a_test_task_stl
+}  // namespace kurakin_m_monte_carlo_stl
 
 #endif  // TASKS_EXAMPLES_TEST_STD_OPS_STD_H_
