@@ -12,7 +12,7 @@
 using namespace std::chrono_literals;
 
 void MonteCarloMethods(double (*func)(std::vector<double> x), std::vector<std::pair<double, double>> &bounds,
-                       size_t iterations, std::promise<double> &&pr) {
+                       size_t &iterations, std::promise<double> &&pr) {
   std::random_device dev;
   std::mt19937 gen(dev());
   std::vector<double> x(bounds.size());
@@ -66,7 +66,7 @@ bool kurakin_m_monte_carlo_stl::TestSTLTaskParallel::run() {
   }
 
   for (std::size_t i = 0; i < nthreads; i++) {
-    threads.emplace_back(MonteCarloMethods, integral.func_, std::ref(integral.bounds_), iteration_thread,
+    threads.emplace_back(MonteCarloMethods, integral.func_, std::ref(integral.bounds_), std::ref(iteration_thread),
                          std::move(promises[i]));
   }
   for (auto &th : threads) {
