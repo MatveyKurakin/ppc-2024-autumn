@@ -6,46 +6,45 @@
 #include <boost/mpi/collectives.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <memory>
-#include <numeric>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "core/task/include/task.hpp"
 
-namespace nesterov_a_test_task_mpi {
+namespace kurakin_m_monte_carlo_mpi_omp {
 
-std::vector<int> getRandomVector(int sz);
+struct Integral {
+  // double (*func_)(std::vector<double> x);
+  std::vector<std::pair<double, double>> bounds_;
+  size_t iterations_;
+};
 
-class TestMPITaskSequential : public ppc::core::Task {
+class TestMPIOMPTaskParallel : public ppc::core::Task {
  public:
-  explicit TestMPITaskSequential(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
+  explicit TestMPIOMPTaskParallel(std::shared_ptr<ppc::core::TaskData> taskData, double (*func)(std::vector<double> x))
+      : Task(std::move(taskData)), func_(func) {}
   bool pre_processing() override;
   bool validation() override;
   bool run() override;
   bool post_processing() override;
 
  private:
-  std::vector<int> input_;
-  int res{};
-  std::string ops;
+  boost::mpi::communicator world_;
+  double (*func_)(std::vector<double> x);
+  double res_{};
 };
-
-class TestMPITaskParallel : public ppc::core::Task {
+class TestTaskSequential : public ppc::core::Task {
  public:
-  explicit TestMPITaskParallel(std::shared_ptr<ppc::core::TaskData> taskData_, std::string ops_)
-      : Task(std::move(taskData_)), ops(std::move(ops_)) {}
+  explicit TestTaskSequential(std::shared_ptr<ppc::core::TaskData> taskData, double (*func)(std::vector<double> x))
+      : Task(std::move(taskData)), func_(func) {}
   bool pre_processing() override;
   bool validation() override;
   bool run() override;
   bool post_processing() override;
 
  private:
-  std::vector<int> input_, local_input_;
-  int res{};
-  std::string ops;
-  boost::mpi::communicator world;
+  double (*func_)(std::vector<double> x);
+  double res_{};
 };
 
-}  // namespace nesterov_a_test_task_mpi
+}  // namespace kurakin_m_monte_carlo_mpi_omp
